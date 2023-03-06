@@ -17,6 +17,11 @@ def get_artist(artist_id: str):
     return results
 
 
+def get_album(album_id: str):
+    results = spotify.album(album_id)
+    return results
+
+
 def get_top_songs(artist_id: str):
     results = spotify.artist_top_tracks(artist_id=artist_id)
     return results
@@ -24,6 +29,24 @@ def get_top_songs(artist_id: str):
 
 def get_related_artists(artist_id: str):
     results = spotify.artist_related_artists(artist_id=artist_id)
+    return results
+
+
+def search_track(track_name: str):
+    results = spotify.search(q='track:' + track_name, type='track')
+    items = results['tracks']['items']
+    if len(items) > 0:
+        return items[0]
+    else:
+        return None
+
+def get_track(track_id: str):
+    results = spotify.track(track_id=track_id)
+    return results
+
+
+def get_several_tracks(track_ids):
+    results = spotify.tracks(tracks=track_ids)
     return results
 
 # def get_artist(artist_id: str):
