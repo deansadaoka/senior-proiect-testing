@@ -42,3 +42,5 @@ CREATE TABLE tracks
 SELECT * FROM artists;
 SELECT * FROM albums;
 SELECT * FROM tracks;
+
+SELECT DISTINCT genre FROM tracks;
