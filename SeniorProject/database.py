@@ -5,6 +5,7 @@ import requests
 
 API_KEY = "d108b6367729b00677185f71707e6b6c"
 USER_AGENT = "niikallen"
+NUM_TAGS = 4
 
 mydb = mysql.connector.connect(
     host="localhost",
@@ -72,8 +73,8 @@ def lookup_tags(track, album, artist):
         return None
 
     # extract the top three tags and turn them into a string
-    tags = [t['name'] for t in response.json()['toptags']['tag'][:4]]
-    if not tags:
+    tags = [t['name'] for t in response.json()['toptags']['tag'][:NUM_TAGS]]
+    if not tags or len(tags) < NUM_TAGS:
         response = lastfm_get({
             'method': 'album.getTopTags',
             'artist': artist,
@@ -83,8 +84,8 @@ def lookup_tags(track, album, artist):
         if response.status_code != 200:
             return None
 
-        tags = [t['name'] for t in response.json()['toptags']['tag'][:4]]
-        if not tags:
+        tags = [t['name'] for t in response.json()['toptags']['tag'][:(NUM_TAGS - len(tags))]]
+        if not tags or len(tags) < NUM_TAGS:
             response = lastfm_get({
                 'method': 'artist.getTopTags',
                 'artist': artist,
@@ -93,7 +94,7 @@ def lookup_tags(track, album, artist):
             if response.status_code != 200:
                 return None
 
-            tags = [t['name'] for t in response.json()['toptags']['tag'][:4]]
+            tags = [t['name'] for t in response.json()['toptags']['tag'][:(NUM_TAGS - len(tags))]]
 
     tags_str = ', '.join(tags)
 

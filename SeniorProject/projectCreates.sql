@@ -36,6 +36,32 @@ CREATE TABLE tracks
     FOREIGN KEY (artistId) REFERENCES artists (spotifyId) ON DELETE CASCADE
 );
 
+CREATE TABLE users (
+    userId INT NOT NULL AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL,
+    password VARCHAR(50) NOT NULL,
+    PRIMARY KEY (userId)
+);
+
+CREATE TABLE friends (
+    friend_id INT NOT NULL AUTO_INCREMENT,
+    user1Id INT NOT NULL,
+    user2Id INT NOT NULL,
+    PRIMARY KEY (friend_id),
+    FOREIGN KEY (user1Id) REFERENCES Users(userId),
+    FOREIGN KEY (user2Id) REFERENCES Users(userId)
+);
+
+CREATE TABLE playlists (
+    playlistId INT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL,
+    authorId INT NOT NULL,
+    description VARCHAR(200),
+    songs VARCHAR(500),
+    PRIMARY KEY (playlistId),
+    FOREIGN KEY (authorId) REFERENCES Users(userId)
+);
+
 # ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'adminpass';
 # flush privileges;
 
@@ -47,4 +73,25 @@ SELECT * FROM tracks;
 SELECT DISTINCT genre FROM tracks;
 
 
-create database test;
+INSERT INTO users (username, password)
+VALUES ('Matt', '123'),
+       ('Dean', '123'),
+       ('Nick', '123'),
+       ('Lubinov', '123');
+
+SELECT * FROM users;
+
+
+INSERT INTO Friends (user1Id, user2Id)
+VALUES (1, 2), -- Dean and Matt
+       (1, 3), -- Dean and Nick
+       (3, 4), -- Nick and Lubinov
+       (2, 3), -- Matt and Nick
+       (2, 4), -- Matt and Lubinov
+       (1, 4); -- Dean and Lubinov
+
+SELECT * FROM friends;
+
+
+
+
