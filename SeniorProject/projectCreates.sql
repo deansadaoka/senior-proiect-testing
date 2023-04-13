@@ -30,6 +30,7 @@ CREATE TABLE tracks
     previewLink       VARCHAR(200),
     duration   INT          NOT NULL,
     genre      VARCHAR(50)  NOT NULL,
+    tags       VARCHAR(200) NOT NULL,
     imageLink VARCHAR(100) NOT NULL,
     FOREIGN KEY (albumId) REFERENCES albums (spotifyId) ON DELETE CASCADE,
     FOREIGN KEY (artistId) REFERENCES artists (spotifyId) ON DELETE CASCADE
@@ -44,3 +45,6 @@ SELECT * FROM albums;
 SELECT * FROM tracks;
 
 SELECT DISTINCT genre FROM tracks;
+
+
+create database test;

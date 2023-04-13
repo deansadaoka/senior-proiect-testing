@@ -10,7 +10,7 @@ mydb = mysql.connector.connect(
     host="localhost",
     user="root",
     password=os.environ['SQL_PASSWORD'],
-    database="mydatabase"
+    database="test"
 )
 
 mycursor = mydb.cursor()
@@ -72,7 +72,7 @@ def lookup_tags(track, album, artist):
         return None
 
     # extract the top three tags and turn them into a string
-    tags = [t['name'] for t in response.json()['toptags']['tag'][:10]]
+    tags = [t['name'] for t in response.json()['toptags']['tag'][:4]]
     if not tags:
         response = lastfm_get({
             'method': 'album.getTopTags',
@@ -83,7 +83,7 @@ def lookup_tags(track, album, artist):
         if response.status_code != 200:
             return None
 
-        tags = [t['name'] for t in response.json()['toptags']['tag'][:10]]
+        tags = [t['name'] for t in response.json()['toptags']['tag'][:4]]
         if not tags:
             response = lastfm_get({
                 'method': 'artist.getTopTags',
@@ -93,7 +93,7 @@ def lookup_tags(track, album, artist):
             if response.status_code != 200:
                 return None
 
-            tags = [t['name'] for t in response.json()['toptags']['tag'][:10]]
+            tags = [t['name'] for t in response.json()['toptags']['tag'][:4]]
 
     tags_str = ', '.join(tags)
 
@@ -106,7 +106,7 @@ def lookup_tags(track, album, artist):
 def insert_track(track, genre, image_link):
     sql = "INSERT INTO tracks (spotifyId, name, albumId, artistId, artist, popularity, " \
           "previewLink, duration, genre, tags, imageLink) " \
-          "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" \
+          "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" \
           "ON DUPLICATE KEY UPDATE popularity=%s, previewLink=%s, imageLink=%s"
 
     values = [
@@ -128,6 +128,7 @@ def insert_track(track, genre, image_link):
 
     mycursor.execute(sql, values)
     mydb.commit()
+    print("track inserted")
 
 
 def insert_album(album):

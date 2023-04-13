@@ -17,15 +17,15 @@ def main():
     #             database.insert_artist(artist)
     #     line_num += 1
 
-    artist = my_spotify.search_artist("Kanye West")
-    related = my_spotify.get_related_artists(artist['id'])
-    for r in related['artists']:
-        print(r['name'])
-        print(r['popularity'])
-        print(r['genres'])
-        print()
-    print(related)
-    exit(0)
+    # artist = my_spotify.search_artist("Kanye West")
+    # related = my_spotify.get_related_artists(artist['id'])
+    # for r in related['artists']:
+    #     print(r['name'])
+    #     print(r['popularity'])
+    #     print(r['genres'])
+    #     print()
+    # print(related)
+    # exit(0)
 
     song_ids = []
     song_names = []
