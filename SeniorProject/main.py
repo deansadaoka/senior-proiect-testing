@@ -5,7 +5,38 @@ import my_spotify
 import database
 
 
+def add_track_to_database(track_name):
+    track = my_spotify.search_track(track_name)
+    album = track['album']
+    artist = track['artists'][0]
+
+    albumId = album['id']
+    albumName = album['name']
+    albumTotalTracks = album['total_tracks']
+    albumLink = album['external_urls']['spotify']
+
+    artistId = artist['id']
+    artistName = artist['name']
+
+    duration = track['duration_ms']
+    spotifyId = track['id']
+    name = track['name']
+    popularity = track['popularity']
+    previewLink = track['preview_url']
+
+    if len(album['images']) > 0:
+        imageLink = album['images'][0]['url']
+    else:
+        imageLink = ""
+
+    genre = "OTHER"
+
+
+
 def main():
+    add_track_to_database("Smells Like Teen Spirit")
+    return
+
     f = open('top_songs.csv')
     csv_reader = csv.reader(f)
     # line_num = 0
@@ -62,7 +93,89 @@ def main():
             database.insert_track(t, genre, album['images'][0]['url'])
 
 
-
 if __name__ == '__main__':
     main()
 
+
+
+# {
+#     'album': {
+#         'album_type': 'album',
+#         'artists': [
+#             {
+#                 'external_urls': {
+#                     'spotify': 'https://open.spotify.com/artist/6olE6TJLqED3rqDCT0FyPh'
+#                 },
+#                 'href': 'https://api.spotify.com/v1/artists/6olE6TJLqED3rqDCT0FyPh',
+#                 'id': '6olE6TJLqED3rqDCT0FyPh',
+#                 'name': 'Nirvana',
+#                 'type': 'artist',
+#                 'uri': 'spotify:artist:6olE6TJLqED3rqDCT0FyPh'
+#             }
+#         ],
+#         'available_markets': [
+#             'CA', 'MX', 'US'
+#         ],
+#         'external_urls': {
+#             'spotify': 'https://open.spotify.com/album/2guirTSEqLizK7j9i1MTTZ'
+#         },
+#         'href': 'https://api.spotify.com/v1/albums/2guirTSEqLizK7j9i1MTTZ',
+#         'id': '2guirTSEqLizK7j9i1MTTZ',
+#         'images': [
+#             {
+#                 'height': 640,
+#                 'url': 'https://i.scdn.co/image/ab67616d0000b273e175a19e530c898d167d39bf',
+#                 'width': 640
+#             },
+#             {
+#                 'height': 300,
+#                 'url': 'https://i.scdn.co/image/ab67616d00001e02e175a19e530c898d167d39bf',
+#                 'width': 300
+#             },
+#             {
+#                 'height': 64,
+#                 'url': 'https://i.scdn.co/image/ab67616d00004851e175a19e530c898d167d39bf',
+#                 'width': 64
+#             }
+#         ],
+#         'name': 'Nevermind (Remastered)',
+#         'release_date': '1991-09-26',
+#         'release_date_precision': 'day',
+#         'total_tracks': 13,
+#         'type': 'album',
+#         'uri': 'spotify:album:2guirTSEqLizK7j9i1MTTZ'
+#     },
+#     'artists': [
+#         {
+#             'external_urls': {
+#                 'spotify': 'https://open.spotify.com/artist/6olE6TJLqED3rqDCT0FyPh'
+#             },
+#             'href': 'https://api.spotify.com/v1/artists/6olE6TJLqED3rqDCT0FyPh',
+#             'id': '6olE6TJLqED3rqDCT0FyPh',
+#             'name': 'Nirvana',
+#             'type': 'artist',
+#             'uri': 'spotify:artist:6olE6TJLqED3rqDCT0FyPh'
+#         }
+#     ],
+#     'available_markets': [
+#         'CA', 'MX', 'US'
+#     ],
+#     'disc_number': 1,
+#     'duration_ms': 301920,
+#     'explicit': False,
+#     'external_ids': {
+#         'isrc': 'USGF19942501'
+#     },
+#     'external_urls': {
+#         'spotify': 'https://open.spotify.com/track/5ghIJDpPoe3CfHMGu71E6T'
+#     },
+#     'href': 'https://api.spotify.com/v1/tracks/5ghIJDpPoe3CfHMGu71E6T',
+#     'id': '5ghIJDpPoe3CfHMGu71E6T',
+#     'is_local': False,
+#     'name': 'Smells Like Teen Spirit',
+#     'popularity': 80,
+#     'preview_url': 'https://p.scdn.co/mp3-preview/91219ebc0d0505a1001c4b854f8b2451fcec95b8?cid=fa10ca25853a48d7b697e2bcfee74832',
+#     'track_number': 1,
+#     'type': 'track',
+#     'uri': 'spotify:track:5ghIJDpPoe3CfHMGu71E6T'
+# }

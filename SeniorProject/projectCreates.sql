@@ -1,6 +1,3 @@
-# DROP TABLE artists;
-DROP TABLE tracks;
-DROP TABLE albums;
 #
 CREATE TABLE artists (
     spotifyId VARCHAR(50) NOT NULL PRIMARY KEY,
@@ -44,12 +41,22 @@ CREATE TABLE users (
 );
 
 CREATE TABLE friends (
-    friend_id INT NOT NULL AUTO_INCREMENT,
+    friendId INT NOT NULL AUTO_INCREMENT,
     user1Id INT NOT NULL,
     user2Id INT NOT NULL,
-    PRIMARY KEY (friend_id),
-    FOREIGN KEY (user1Id) REFERENCES Users(userId),
-    FOREIGN KEY (user2Id) REFERENCES Users(userId)
+    PRIMARY KEY (friendId),
+    FOREIGN KEY (user1Id) REFERENCES users(userId),
+    FOREIGN KEY (user2Id) REFERENCES users(userId)
+);
+
+CREATE TABLE friend_requests (
+    requestId INT NOT NULL AUTO_INCREMENT,
+    requesterId INT NOT NULL,
+    recipientId INT NOT NULL,
+    PRIMARY KEY (requestId),
+    FOREIGN KEY (requesterId) REFERENCES users(userId),
+    FOREIGN KEY (recipientId) REFERENCES users(userId),
+    UNIQUE KEY (requesterId, recipientId)
 );
 
 CREATE TABLE playlists (
@@ -57,20 +64,33 @@ CREATE TABLE playlists (
     name VARCHAR(50) NOT NULL,
     authorId INT NOT NULL,
     description VARCHAR(200),
-    songs VARCHAR(500),
     PRIMARY KEY (playlistId),
-    FOREIGN KEY (authorId) REFERENCES Users(userId)
+    FOREIGN KEY (authorId) REFERENCES users(userId)
 );
 
-# ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'adminpass';
-# flush privileges;
+CREATE TABLE playlist_tracks (
+    playlistId INT NOT NULL,
+    spotifyId VARCHAR(50) NOT NULL,
+    rating INT NOT NULL,
+    PRIMARY KEY (playlistId, spotifyId),
+    FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE,
+    FOREIGN KEY (spotifyId) REFERENCES tracks(spotifyId) ON DELETE CASCADE
+);
 
+SELECT * FROM playlist_tracks;
 
-SELECT * FROM artists;
-SELECT * FROM albums;
-SELECT * FROM tracks;
+CREATE TABLE tags (
+    tagId INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
 
-SELECT DISTINCT genre FROM tracks;
+CREATE TABLE track_tags (
+    spotifyId VARCHAR(50),
+    tagId INT,
+    PRIMARY KEY (spotifyId, tagId),
+    FOREIGN KEY (spotifyId) REFERENCES tracks(spotifyId) ON DELETE CASCADE,
+    FOREIGN KEY (tagId) REFERENCES tags(tagId) ON DELETE CASCADE
+);
 
 
 INSERT INTO users (username, password)
@@ -82,7 +102,7 @@ VALUES ('Matt', '123'),
 SELECT * FROM users;
 
 
-INSERT INTO Friends (user1Id, user2Id)
+INSERT INTO friends (user1Id, user2Id)
 VALUES (1, 2), -- Dean and Matt
        (1, 3), -- Dean and Nick
        (3, 4), -- Nick and Lubinov
@@ -93,5 +113,22 @@ VALUES (1, 2), -- Dean and Matt
 SELECT * FROM friends;
 
 
+INSERT INTO users (username, password)
+VALUES ('Kevin', '123'),
+       ('Bob', '123');
 
+INSERT INTO friend_requests (requesterId, recipientId)
+SELECT u1.userId, u2.userId
+FROM users u1, users u2
+WHERE (u1.username = 'Bob' AND u2.username = 'Dean')
+    OR (u1.username = 'Kevin' AND u2.username = 'Dean');
+
+SELECT * FROM friend_requests;
+
+SELECT * FROM playlists;
+
+SELECT * FROM tags;
+SELECT * FROM track_tags;
+SELECT * FROM tracks;
+SELECT * FROM artists;
 
