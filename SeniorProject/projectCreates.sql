@@ -129,6 +129,9 @@ SELECT * FROM playlists;
 
 SELECT * FROM tags;
 SELECT * FROM track_tags;
-SELECT * FROM tracks;
+SELECT * FROM tracks WHERE artist = 'Nirvana';
 SELECT * FROM artists;
 
+SELECT * FROM tracks WHERE artist = 'Nirvana';
+SELECT * FROM albums WHERE name = 'Nevermind (Remastered)';
+SELECT * FROM artists WHERE name = 'Nirvana';

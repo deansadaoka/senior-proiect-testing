@@ -8,13 +8,13 @@ USER_AGENT = "niikallen"
 NUM_TAGS = 4
 
 mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password=os.environ['SQL_PASSWORD'],
-    database="test"
+    host="ambari-node5.csc.calpoly.edu",
+    user="nickdeanmatt",
+    password='adminpass',
+    database="nickdeanmatt"
 )
 
-mycursor = mydb.cursor()
+mycursor = mydb.cursor(buffered=True)
 
 
 def insert_artist(artist):
@@ -120,7 +120,7 @@ def insert_track(track, genre, image_link):
         track['preview_url'],
         track['duration_ms'],
         genre,
-        lookup_tags(track['name'], track['album']['name'], track['artists'][0]['name']),
+        'DEPRECATED',
         image_link,
         track['popularity'],
         track['preview_url'],
@@ -129,7 +129,6 @@ def insert_track(track, genre, image_link):
 
     mycursor.execute(sql, values)
     mydb.commit()
-    print("track inserted")
 
 
 def insert_album(album):
@@ -149,6 +148,70 @@ def insert_album(album):
 
     mycursor.execute(sql, val)
     mydb.commit()
+
+
+def track_exists(track_name, artist_name):
+    query = """
+    SELECT *
+    FROM tracks
+    WHERE name = %s AND artist = %s
+    """
+    mycursor.execute(query, (track_name, artist_name))
+
+    row = mycursor.fetchone()
+
+    return row is not None
+
+
+def album_exists(album_id):
+    query = """
+    SELECT *
+    FROM albums
+    WHERE spotifyId = %s
+    """
+    mycursor.execute(query, (album_id,))
+
+    row = mycursor.fetchone()
+
+    return row is not None
+
+
+def artist_exists(artist_id):
+    query = """
+    SELECT *
+    FROM artists
+    WHERE spotifyId = %s
+    """
+    mycursor.execute(query, (artist_id,))
+
+    row = mycursor.fetchone()
+
+    return row is not None
+
+
+def insert_tag_and_relation(track_id, tag_name):
+    # First, we check if the tag already exists
+    check_query = "SELECT tagId FROM tags WHERE name = %s"
+    mycursor.execute(check_query, (tag_name,))
+    result = mycursor.fetchone()
+
+    if result is None:
+        # If tag does not exist, we insert it into the tags table
+        insert_tag_query = "INSERT INTO tags (name) VALUES (%s)"
+        mycursor.execute(insert_tag_query, (tag_name,))
+        mydb.commit()
+
+        # Get the tagId of the inserted tag
+        mycursor.execute(check_query, (tag_name,))
+        result = mycursor.fetchone()
+
+    tag_id = result[0]
+
+    # Insert a relation between the track and the tag in the track_tags table
+    insert_relation_query = "INSERT IGNORE INTO track_tags (spotifyId, tagId) VALUES (%s, %s)"
+    mycursor.execute(insert_relation_query, (track_id, tag_id))
+    mydb.commit()
+
 
 
 track_ex = {

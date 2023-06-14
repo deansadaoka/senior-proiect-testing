@@ -12,6 +12,17 @@ def search_artist(name: str):
     return items[0] if len(items) > 0 else None
 
 
+def search_track_artist(track_name, artist_name):
+    """Searches Spotify for a track with the name and artist"""
+    results = spotify.search(q=f'track:{track_name} artist:{artist_name}', type='track')
+    tracks = results['tracks']['items']
+
+    if tracks:
+        return tracks[0]  # return the first track in the list
+
+    return None
+
+
 def get_artist(artist_id: str):
     results = spotify.artist(artist_id=artist_id)
     return results

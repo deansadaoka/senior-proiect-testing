@@ -1,22 +1,55 @@
 import csv
 import random
+import re
+
+import requests
 
 import my_spotify
 import database
 
+top_tags = ['rock', 'electronic', 'seen live', 'alternative', 'indie', 'pop', 'female vocalists', 'metal', 'alternative rock', 'jazz', 'classic rock', 'ambient', 'experimental', 'folk', 'indie rock', 'punk', 'Hip-Hop', 'hard rock', 'black metal', 'instrumental', 'singer-songwriter', 'dance', '80s', 'Progressive rock', 'death metal', 'heavy metal', 'hardcore', 'british', 'soul', 'chillout', 'electronica', 'rap', 'industrial', 'Classical', 'Soundtrack', 'punk rock', 'blues', 'thrash metal', '90s', 'metalcore', 'acoustic', 'psychedelic', 'japanese', 'hip hop', 'post-rock', 'Progressive metal', 'german', 'House', 'funk', 'new wave', 'trance', 'techno', 'piano', 'american', 'post-punk', 'reggae', '70s', 'indie pop', 'electro', 'trip-hop', 'rnb', '60s', 'country', 'Power metal', 'Melodic Death Metal', 'downtempo', 'emo', 'male vocalists', 'post-hardcore', 'doom metal', 'Psychedelic Rock', 'oldies', 'Love', 'synthpop', 'beautiful', '00s', 'french', 'russian', 'Gothic Metal', 'Grunge', 'idm', 'Gothic', 'noise', 'dark ambient', 'guitar', 'cover', 'britpop', 'favorites', 'screamo', 'swedish', 'Mellow', 'lounge', 'pop rock', 'albums I own', 'grindcore', 'under 2000 listeners', 'j-pop', 'Nu Metal', 'female vocalist', 'symphonic metal', 'polish', 'blues rock', 'chill', 'Drum and bass', 'Avant-Garde', 'new age', 'ska', 'shoegaze', 'fip', 'Progressive', 'minimal', 'Awesome', 'darkwave', 'pop punk', 'dubstep', 'ebm', 'Canadian', 'world', 'folk metal', 'deathcore', 'easy listening', 'J-rock', 'alternative metal', 'finnish', 'Brutal Death Metal', 'industrial metal', 'hardcore punk', 'Gothic Rock', 'Lo-Fi', 'Disco', 'latin', 'USA', 'dub', 'atmospheric', 'folk rock', 'drone', 'Stoner Rock', 'All', 'sexy', 'christian', 'deutsch', 'female', 'electropop', 'celtic', 'jazz fusion', 'christmas', 'Sludge', 'Garage Rock', 'contemporary classical', 'dream pop', 'anime', 'italian', 'Smooth Jazz', 'psytrance', 'melancholic', 'epic', 'brazilian', 'cool', 'spanish', 'romantic', 'melancholy', 'comedy', 'sad', 'male vocalist', 'Ballad', 'ethereal', 'Favorite', 'Fusion', 'UK', 'JPop', 'Technical Death Metal', 'soft rock', 'k-pop', 'Korean', 'art rock', 'classic', 'video game music', 'australian', 'underground hip-hop', 'Female fronted metal', 'swing', 'acid jazz', 'neofolk', 'irish', 'party', 'dark', 'speed metal', 'baroque', 'visual kei', 'live', 'norwegian', 'neoclassical', 'viking metal', 'rock n roll', 'Alt-country', 'remix', 'rockabilly', 'Favourites', 'amazing', 'glam rock']
 
-def add_track_to_database(track_name):
-    track = my_spotify.search_track(track_name)
+def read_csv_file(file_path):
+    with open(file_path, 'r') as file:
+        reader = csv.DictReader(file)
+        return list(reader)
+
+
+def get_track_tags(artist_name, track_name):
+    base_url = "http://ws.audioscrobbler.com/2.0/"
+    api_key = "a7bfdeea33862f1ae4696306d97a369a"
+
+    params = {
+        "method": "track.gettoptags",
+        "artist": artist_name,
+        "track": track_name,
+        "api_key": api_key,
+        "format": "json"
+    }
+
+    response = requests.get(base_url, params=params)
+    data = response.json()
+
+    tags = []
+    if 'toptags' in data and 'tag' in data['toptags']:
+        for tag in data['toptags']['tag']:
+            # Check if tag matches the undesired pattern
+            if not re.match(r'^-\d+$', tag['name']):
+                tags.append(tag['name'])
+
+    return tags
+
+
+def add_track_to_database(track_name, artist_name, tag, genre):
+    # Get track, artist, and album from spotify
+    track = my_spotify.search_track_artist(track_name, artist_name)
+
     album = track['album']
-    artist = track['artists'][0]
 
     albumId = album['id']
-    albumName = album['name']
-    albumTotalTracks = album['total_tracks']
-    albumLink = album['external_urls']['spotify']
 
-    artistId = artist['id']
-    artistName = artist['name']
+
+    artistId = track['artists'][0]['id']
 
     duration = track['duration_ms']
     spotifyId = track['id']
@@ -29,16 +62,68 @@ def add_track_to_database(track_name):
     else:
         imageLink = ""
 
-    genre = "OTHER"
+    # Insert Artist, Album, and Track
+    artist = my_spotify.get_artist(artistId)
+    database.insert_artist(artist)
+
+    if not database.album_exists(albumId):
+        database.insert_album(album)
+
+    database.insert_track(track, genre, imageLink)
+
+    # Get tags, filter out bad ones, insert
+    all_tags = get_track_tags(track['artists'][0]['name'], track['name'])
+    tags_to_insert = []
+    for t in all_tags:
+        if t in top_tags:
+            tags_to_insert.append(t)
+
+    tags_to_insert.append(tag)
+    for ti in tags_to_insert:
+        database.insert_tag_and_relation(track['id'], ti)
+
 
 
 
 def main():
-    add_track_to_database("Smells Like Teen Spirit")
+    # add_track_to_database("Smells Like Teen Spirit")
+    # return
+
+    f = open('top_tags_and_tracks.csv')
+    csv_reader = csv.reader(f)
+
+    csv_data = read_csv_file("top_tags_and_tracks.csv")
+    i = 0
+    for row in csv_data:
+        track_name = row['Song Name']
+        artist_name = row['Artist Name']
+        genre = row['Genre']
+        tag = row['Tag Name']
+
+        # print(track_name)
+        # print(artist_name)
+        # print(tag)
+        # print(genre)
+
+        # if i > 1303 and not database.track_exists(track_name, artist_name):
+        #     add_track_to_database(track_name, artist_name, genre, tag)
+        #     print(track_name + " inserted!, " + str(i))
+
+
+        try:
+            if i > 4793 and not database.track_exists(track_name, artist_name):
+                add_track_to_database(track_name, artist_name, genre, tag)
+                print(track_name + " inserted!, " + str(i))
+            #add_track_to_database(track_name, artist_name, genre, tag)
+        except Exception as e:
+            print(e)
+            print(track_name)
+            print(i)
+
+        i += 1
+
     return
 
-    f = open('top_songs.csv')
-    csv_reader = csv.reader(f)
     # line_num = 0
     # for row in csv_reader:
     #     if line_num != 0:
