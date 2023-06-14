@@ -27,7 +27,7 @@ CREATE TABLE tracks
     previewLink       VARCHAR(200),
     duration   INT          NOT NULL,
     genre      VARCHAR(50)  NOT NULL,
-    tags       VARCHAR(200) NOT NULL,
+    tags       VARCHAR(200) NOT NULL, #DEPRECATED
     imageLink VARCHAR(100) NOT NULL,
     FOREIGN KEY (albumId) REFERENCES albums (spotifyId) ON DELETE CASCADE,
     FOREIGN KEY (artistId) REFERENCES artists (spotifyId) ON DELETE CASCADE
@@ -76,8 +76,6 @@ CREATE TABLE playlist_tracks (
     FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE,
     FOREIGN KEY (spotifyId) REFERENCES tracks(spotifyId) ON DELETE CASCADE
 );
-
-SELECT * FROM playlist_tracks;
 
 CREATE TABLE tags (
     tagId INT AUTO_INCREMENT PRIMARY KEY,
@@ -129,7 +127,7 @@ SELECT * FROM playlists;
 
 SELECT * FROM tags;
 SELECT * FROM track_tags;
-SELECT * FROM tracks WHERE artist = 'Nirvana';
+SELECT * FROM tracks;
 SELECT * FROM artists;
 
 SELECT * FROM tracks WHERE artist = 'Nirvana';
